@@ -17,12 +17,12 @@ def main():
             'targets': [
                 {
                     'host': 'user@example-machine.local',
-                    'friendly': 'This is aargumn example target'
+                    'friendly': 'This is an example target'
                 }
             ]
         }
         resources.user.write('config.json', json.dumps(example_config))
-        puts('Created new configuration file, please edit and run again:')
+        puts('I have created a new configuration file, please edit and run again:')
         puts(resources.user.path + '/config.json')
     else:
         config = json.loads(resources.user.read('config.json'))
@@ -34,7 +34,6 @@ def display_menu(targets):
     num_targets = len(targets)
     if num_targets <= 0:
         puts('Whoops, you don\'t have any targets listed in your config!')
-        puts('Add some here: ' + resources.user.path + '/config.json')
         exit(0)
 
     # Determine the longest host length
