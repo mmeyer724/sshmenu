@@ -1,7 +1,7 @@
 class Sshmenu < Formula
   homepage "https://github.com/Mike724/sshmenu"
-  url "https://pypi.python.org/packages/38/92/cbcdb546de16c10ddf5aedd03e2fd10803f91b1990975ac60834fc6e01c5/sshmenu-0.0.1.dev1.tar.gz"
-  sha256 "9f9bd24d8f06e70963e773065b449c9b396f1805145122bd87f11f30a6076609"
+  url "https://pypi.python.org/packages/e3/d8/31dfe01785f0fd41ed0763b2f6e5922c1503b1901ce7828a859f6d06591f/sshmenu-0.0.1.tar.gz"
+  sha256 "a13435d9c6d70fecfd364cafe5d2a8b39d92d4f5779ba62ffabdae891aafd29d"
 
   depends_on :python3
 
