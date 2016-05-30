@@ -17,7 +17,8 @@ def main():
             'targets': [
                 {
                     'host': 'user@example-machine.local',
-                    'friendly': 'This is an example target'
+                    'friendly': 'This is an example target',
+                    'options': {}
                 }
             ]
         }
@@ -81,6 +82,7 @@ def display_menu(targets):
             call(['tput', 'clear'])
 
             # After this line, ssh will replace the python process
-            os.execlp('ssh', 'ssh', targets[selected_target]['host'])
+            options = ['-{}{}'.format(opt, val) for opt, val in targets[selected_target].get('options', {}).items()]
+            os.execlp('ssh', 'ssh', targets[selected_target]['host'], *options)
         elif key == readchar.key.CTRL_C:
             exit(0)
