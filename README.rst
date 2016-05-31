@@ -61,8 +61,8 @@ You can specify additional command line options (see `man ssh`) as follows:
     {
         "targets": [
             {
-                "host": "An example target listening non-standard port and verbose flag",
-                "friendly": "This is an example target", 
+                "host": "user@example-machine.local",
+                "friendly": "An example target listening non-standard port and verbose flag", 
                 "options" : [
                     "-p443",
                     "-v"
