@@ -18,11 +18,11 @@ def main():
                 {
                     'host': 'user@example-machine.local',
                     'friendly': 'This is an example target',
-                    'options': {}
+                    'options' : []
                 }
             ]
         }
-        resources.user.write('config.json', json.dumps(example_config))
+        resources.user.write('config.json', json.dumps(example_config, indent=4))
         puts('I have created a new configuration file, please edit and run again:')
         puts(resources.user.path + '/config.json')
     else:
@@ -81,8 +81,10 @@ def display_menu(targets):
             # For cleanliness clear the screen
             call(['tput', 'clear'])
 
+            target = targets[selected_target]
+            # Arguments to the child process should start with the name of the command being run
+            args = ['ssh'] + target.get('options', []) + [target['host']]
             # After this line, ssh will replace the python process
-            options = ['-{}{}'.format(opt, val) for opt, val in targets[selected_target].get('options', {}).items()]
-            os.execlp('ssh', 'ssh', targets[selected_target]['host'], *options)
+            os.execvp('ssh', args)
         elif key == readchar.key.CTRL_C:
             exit(0)
