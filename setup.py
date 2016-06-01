@@ -5,7 +5,7 @@ with open('requirements.txt') as requirements_file:
 
 setup(
     name='sshmenu',
-    version='0.0.1',
+    version='0.0.2',
     license='MIT',
     description='Command line SSH menu and helper utility',
     long_description=open('README.rst').read(),
