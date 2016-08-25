@@ -119,7 +119,7 @@ def display_menu(targets):
             if round(time.time()) - number_last <= 1:
                 number_buffer += key
                 requested_target = int(''.join(number_buffer))
-                # If the new target is invalid, just keep the key press instead
+                # If the new target is invalid, just keep the previously selected target instead
                 if requested_target >= num_targets:
                     requested_target = selected_target
             else:
@@ -138,12 +138,14 @@ def display_menu(targets):
             call(['tput', 'clear'])
 
             target = targets[selected_target]
-            # Arguments to the child process should start with the name of the command being run
+
+            # Check if there is a custom command for this target
             if 'command' in target.keys():
                 command = target['command']
             else:
                 command = 'ssh'
             
+            # Arguments to the child process should start with the name of the command being run
             args = [command] + target.get('options', []) + [target['host']]
             # After this line, ssh will replace the python process
             try:
