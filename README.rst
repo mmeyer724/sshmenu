@@ -50,6 +50,12 @@ On first run an example configuration file will be created for you, along with t
                 "host": "user@example-machine.local",
                 "friendly": "This is an example target",
                 "options": []
+            },
+            {
+                "command": "ssh"
+                "host": "user@example-machine.local",
+                "friendly": "This is an example target",
+                "options": []
             }
         ]
     }
