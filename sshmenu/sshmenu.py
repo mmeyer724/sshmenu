@@ -20,13 +20,13 @@ def main():
                 {
                     'host': 'user@example-machine.local',
                     'friendly': 'This is an example target',
-                    'options' : []
+                    'options': []
                 },
                 {
-                    'command': 'ssh',
+                    'command': 'mosh',
                     'host': 'user@example-machine.local',
-                    'friendly': 'This is an example target',
-                    'options' : []
+                    'friendly': 'This is an example target using mosh',
+                    'options': []
                 }
             ]
         }
@@ -61,10 +61,11 @@ def display_menu(targets):
 
     # Keep track of currently selected target
     selected_target = 0
-    
+
     # Support input of long numbers
     number_buffer = []
-    number_last = round(time.time()) # Store time of last number that was entered
+    # Store time of last number that was entered
+    number_last = round(time.time())
 
     while True:
         # Return to the saved cursor position
@@ -144,14 +145,14 @@ def display_menu(targets):
                 command = target['command']
             else:
                 command = 'ssh'
-            
+
             # Arguments to the child process should start with the name of the command being run
             args = [command] + target.get('options', []) + [target['host']]
-            # After this line, ssh will replace the python process
             try:
+                # After this line, ssh will replace the python process
                 os.execvp(command, args)
             except FileNotFoundError:
-                sys.exit('command not found: {commandname}'.format(commandname = command))
+                sys.exit('command not found: {commandname}'.format(commandname=command))
 
         elif key == readchar.key.CTRL_C:
             exit(0)

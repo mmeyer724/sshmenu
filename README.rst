@@ -7,8 +7,8 @@ This tool works by using Python's ``os.execvp(...)``, which will replace the cur
 .. image:: http://i.imgur.com/X1jaoci.gif
 
 
-Installation
-------------
+Quick Setup
+-----------
 Tested working on OS X El Capitan (10.11.5) and Ubuntu Trusty Tahr (14.04), Xenial Xerus (16.04)
 
 
@@ -17,12 +17,23 @@ Tested working on OS X El Capitan (10.11.5) and Ubuntu Trusty Tahr (14.04), Xeni
 .. code-block:: bash
 
    brew install https://raw.githubusercontent.com/Mike724/sshmenu/master/sshmenu.rb
+   sshmenu
    
 **Linux**
 
 .. code-block:: bash
 
    pip3 install sshmenu
+   sshmenu
+
+**Development**
+
+.. code-block:: bash
+
+   git clone https://github.com/Mike724/sshmenu.git
+   cd sshmenu
+   pip3 install -r requirements.txt
+   python3 -m sshmenu
 
 Configuration
 -------------
@@ -52,9 +63,9 @@ On first run an example configuration file will be created for you, along with t
                 "options": []
             },
             {
-                "command": "ssh",
+                "command": "mosh",
                 "host": "user@example-machine.local",
-                "friendly": "This is an example target",
+                "friendly": "This is an example target using mosh",
                 "options": []
             }
         ]
