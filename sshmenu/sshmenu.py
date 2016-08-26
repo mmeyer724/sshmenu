@@ -1,8 +1,10 @@
 import json
 import os
 import readchar
-from subprocess import call
+import sys
+import time
 
+from subprocess import call
 from clint import resources
 from clint.textui import puts, colored
 
@@ -16,6 +18,12 @@ def main():
         example_config = {
             'targets': [
                 {
+                    'host': 'user@example-machine.local',
+                    'friendly': 'This is an example target',
+                    'options' : []
+                },
+                {
+                    'command': 'ssh',
                     'host': 'user@example-machine.local',
                     'friendly': 'This is an example target',
                     'options' : []
@@ -46,13 +54,17 @@ def display_menu(targets):
 
     # Clear screen, give instructions
     call(['tput', 'clear'])
-    puts(colored.cyan('Select a target (up, down, enter, ctrl+c to exit)'))
+    puts(colored.cyan('Select a target (up (k), down (j), enter, ctrl+c to exit)'))
 
     # Save current cursor position so we can overwrite on list updates
     call(['tput', 'sc'])
 
     # Keep track of currently selected target
     selected_target = 0
+    
+    # Support input of long numbers
+    number_buffer = []
+    number_last = round(time.time()) # Store time of last number that was entered
 
     while True:
         # Return to the saved cursor position
@@ -60,7 +72,7 @@ def display_menu(targets):
 
         # Print items
         for index, target in enumerate(targets):
-            desc = target['host'].ljust(longest_host) + ' | ' + target['friendly']
+            desc = '%2d ' % (index) + target['host'].ljust(longest_host) + ' | ' + target['friendly']
             if index == selected_target:
                 puts(colored.green(' -> ' + desc))
             else:
@@ -69,22 +81,77 @@ def display_menu(targets):
         # Hang until we get a keypress
         key = readchar.readkey()
 
-        if key == readchar.key.UP:
+        if key == readchar.key.UP or key == 'k':
             # Ensure the new selection would be valid
             if (selected_target - 1) >= 0:
                 selected_target -= 1
-        elif key == readchar.key.DOWN:
+
+            # Empty the number buffer
+            number_buffer = []
+
+        elif key == readchar.key.DOWN or key == 'j':
             # Ensure the new selection would be valid
             if (selected_target + 1) <= (num_targets - 1):
                 selected_target += 1
+
+            # Empty the number buffer
+            number_buffer = []
+
+        elif key == 'g':
+            # Go to top
+            selected_target = 0
+
+            # Empty the number buffer
+            number_buffer = []
+
+        elif key == 'G':
+            # Go to bottom
+            selected_target = num_targets - 1
+
+            # Empty the number buffer
+            number_buffer = []
+
+        # Check if key is a number
+        elif key in map(lambda x: str(x), range(10)):
+            requested_target = int(key)
+
+            # Check if there are any previously entered numbers, and append if less than one second has gone by
+            if round(time.time()) - number_last <= 1:
+                number_buffer += key
+                requested_target = int(''.join(number_buffer))
+                # If the new target is invalid, just keep the previously selected target instead
+                if requested_target >= num_targets:
+                    requested_target = selected_target
+            else:
+                number_buffer = [key]
+
+            number_last = round(time.time())
+
+            # Ensure the new selection would be valid
+            if requested_target >= num_targets:
+                requested_target = num_targets - 1
+
+            selected_target = requested_target
+
         elif key == readchar.key.ENTER:
             # For cleanliness clear the screen
             call(['tput', 'clear'])
 
             target = targets[selected_target]
+
+            # Check if there is a custom command for this target
+            if 'command' in target.keys():
+                command = target['command']
+            else:
+                command = 'ssh'
+            
             # Arguments to the child process should start with the name of the command being run
-            args = ['ssh'] + target.get('options', []) + [target['host']]
+            args = [command] + target.get('options', []) + [target['host']]
             # After this line, ssh will replace the python process
-            os.execvp('ssh', args)
+            try:
+                os.execvp(command, args)
+            except FileNotFoundError:
+                sys.exit('command not found: {commandname}'.format(commandname = command))
+
         elif key == readchar.key.CTRL_C:
             exit(0)
