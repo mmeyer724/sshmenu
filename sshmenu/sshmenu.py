@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 import readchar
@@ -11,11 +12,16 @@ from clint.textui import puts, colored
 
 
 def main():
+    # Check arguments
+    parser = argparse.ArgumentParser(prog='sshmenu', description='A simple tool for connecting to remote hosts via ssh.')
+    parser.add_argument('-c', '--configname', default='config.json', help='Specify an alternative configuration name.')
+    args = parser.parse_args()
+
     # First parameter is 'company' name, hence duplicate arguments
     resources.init('sshmenu', 'sshmenu')
 
-    # For the first run, create an example config
-    if resources.user.read('config.json') is None:
+    # If the config file doesn't exist, create an example config
+    if resources.user.read(args.configname) is None:
         example_config = {
             'targets': [
                 {
@@ -31,20 +37,20 @@ def main():
                 }
             ]
         }
-        resources.user.write('config.json', json.dumps(example_config, indent=4))
+        resources.user.write(args.configname, json.dumps(example_config, indent=4))
         puts('I have created a new configuration file, please edit and run again:')
-        puts(resources.user.path + os.path.sep + 'config.json')
+        puts(resources.user.path + os.path.sep + args.configname)
     else:
-        config = json.loads(resources.user.read('config.json'))
+        config = json.loads(resources.user.read(args.configname))
         display_menu(config['targets'])
 
 def get_terminal_height():
     # Return height of terminal as int
     try:
-        width, height = shutil.get_terminal_size((80,40))
+        width, height = shutil.get_terminal_size((80,80))
     except AttributeError:
-        # get_terminal_size is only available in Python >= 3.3. Use default height of 40 if get_terminal_size fails
-        height = 40 
+        # get_terminal_size is only available in Python >= 3.3. Use default height of 80 if get_terminal_size fails
+        height = 80 
 
     return(int(height))
 
