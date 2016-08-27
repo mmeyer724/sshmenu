@@ -103,23 +103,28 @@ def display_menu(targets):
         # Redraw the instructions to make sure they don't disappear when resizing terminal
         puts(colored.cyan('Select a target (up (k), down (j), enter, ctrl+c to exit)'))
 
-        # Recalculate visible targets based on selected_target
+        # Check if the terminal height has changed
         move_down = False
         move_up = False
         if terminal_height != new_terminal_height:
-            if selected_target + (terminal_height - 2) > num_targets:
+            terminal_height = new_terminal_height
+            if selected_target >= (terminal_height - 3):
                 move_down = True
             else:
                 move_up = True
 
-            terminal_height = new_terminal_height
-
-        if selected_target > max(visible_target_range) or move_down:
+        # Recalculate visible targets based on selected_target
+        if move_down:
             visible_start = selected_target - terminal_height + 3
             visible_end = selected_target + 1
             visible_target_range = range(visible_start, visible_end)
-
-        elif selected_target < min(visible_target_range) or move_up:
+        elif move_up:
+            visible_target_range = range(terminal_height - 2)
+        elif selected_target > max(visible_target_range):
+            visible_start = selected_target - terminal_height + 3
+            visible_end = selected_target + 1
+            visible_target_range = range(visible_start, visible_end)
+        elif selected_target < min(visible_target_range):
             visible_start = selected_target
             visible_end = selected_target + terminal_height - 2
             visible_target_range = range(visible_start, visible_end)
