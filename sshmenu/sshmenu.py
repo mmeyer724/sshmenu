@@ -1,20 +1,29 @@
+import argparse
 import json
 import os
 import readchar
 import sys
 import time
 
-from subprocess import call
+from subprocess import call, Popen, PIPE
 from clint import resources
 from clint.textui import puts, colored
 
 
 def main():
+    # Check arguments
+    parser = argparse.ArgumentParser(prog='sshmenu', description='A convenient tool for bookmarking hosts and connecting to them via ssh.')
+    parser.add_argument('-c', '--configname', default='config', help='Specify an alternate configuration name.')
+    args = parser.parse_args()
+
+    # Get config name
+    config_name = '{configname}.json'.format(configname=args.configname)
+
     # First parameter is 'company' name, hence duplicate arguments
     resources.init('sshmenu', 'sshmenu')
 
-    # For the first run, create an example config
-    if resources.user.read('config.json') is None:
+    # If the config file doesn't exist, create an example config
+    if resources.user.read(config_name) is None:
         example_config = {
             'targets': [
                 {
@@ -30,13 +39,19 @@ def main():
                 }
             ]
         }
-        resources.user.write('config.json', json.dumps(example_config, indent=4))
+        resources.user.write(config_name, json.dumps(example_config, indent=4))
         puts('I have created a new configuration file, please edit and run again:')
-        puts(resources.user.path + '/config.json')
+        puts(resources.user.path + os.path.sep + config_name)
     else:
-        config = json.loads(resources.user.read('config.json'))
+        config = json.loads(resources.user.read(config_name))
         display_menu(config['targets'])
 
+def get_terminal_height():
+    # Return height of terminal as int
+    tput = Popen(["tput", "lines"], stdout=PIPE)
+    height, stderr = tput.communicate()
+
+    return(int(height))
 
 def display_menu(targets):
     # We need at least one target for our UI to make sense
@@ -45,16 +60,24 @@ def display_menu(targets):
         puts('Whoops, you don\'t have any targets listed in your config!')
         exit(0)
 
-    # Determine the longest host length
+    # Determine the longest host and line length
     longest_host = -1
-    for target in targets:
+    longest_line = -1
+    for index, target in enumerate(targets):
         length = len(target['host'])
+        # Check host length
         if length > longest_host:
             longest_host = length
 
-    # Clear screen, give instructions
+        # Generate description and check line length
+        desc = '%2d ' % (index) + target['host'].ljust(longest_host) + ' | ' + target['friendly']
+        target['desc'] = desc
+        line_length = len(desc)
+        if line_length > longest_line:
+            longest_line = line_length
+
+    # Clear screen
     call(['tput', 'clear'])
-    puts(colored.cyan('Select a target (up (k), down (j), enter, ctrl+c to exit)'))
 
     # Save current cursor position so we can overwrite on list updates
     call(['tput', 'sc'])
@@ -66,18 +89,57 @@ def display_menu(targets):
     number_buffer = []
     # Store time of last number that was entered
     number_last = round(time.time())
+    # Get initial terminal height
+    terminal_height = get_terminal_height()
+    # Set initial visible target range. Subtract 2 because one line is used by the instructions, and one line is always empty at the bottom.
+    visible_target_range = range(terminal_height - 2)
 
     while True:
+        # Calculate height of terminal window in case it has been resized
+        new_terminal_height = get_terminal_height()
         # Return to the saved cursor position
         call(['tput', 'rc'])
 
+        # Redraw the instructions to make sure they don't disappear when resizing terminal
+        puts(colored.cyan('Select a target (up (k), down (j), enter, ctrl+c to exit)'))
+
+        # Check if the terminal height has changed
+        move_down = False
+        move_up = False
+        if terminal_height != new_terminal_height:
+            terminal_height = new_terminal_height
+            if selected_target >= (terminal_height - 3):
+                move_down = True
+            else:
+                move_up = True
+
+        # Recalculate visible targets based on selected_target
+        if move_down:
+            visible_start = selected_target - terminal_height + 3
+            visible_end = selected_target + 1
+            visible_target_range = range(visible_start, visible_end)
+        elif move_up:
+            visible_target_range = range(terminal_height - 2)
+        elif selected_target > max(visible_target_range):
+            visible_start = selected_target - terminal_height + 3
+            visible_end = selected_target + 1
+            visible_target_range = range(visible_start, visible_end)
+        elif selected_target < min(visible_target_range):
+            visible_start = selected_target
+            visible_end = selected_target + terminal_height - 2
+            visible_target_range = range(visible_start, visible_end)
+
         # Print items
         for index, target in enumerate(targets):
-            desc = '%2d ' % (index) + target['host'].ljust(longest_host) + ' | ' + target['friendly']
-            if index == selected_target:
-                puts(colored.green(' -> ' + desc))
-            else:
-                puts('    ' + desc)
+            # Only print the items that are within the visible range.
+            # Due to lines changing their position on the screen when scrolling,
+            # we need to redraw the entire line + add padding to make sure all 
+            # traces of the previous line are erased.
+            if index in visible_target_range:
+                if index == selected_target:
+                    puts(colored.green(' -> ' + target['desc'].ljust(longest_line)))
+                else:
+                    puts('    ' + target['desc'].ljust(longest_line))
 
         # Hang until we get a keypress
         key = readchar.readkey()
