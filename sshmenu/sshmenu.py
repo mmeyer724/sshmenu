@@ -96,7 +96,7 @@ def display_menu(targets):
 
     while True:
         # Calculate height of terminal window in case it has been resized
-        terminal_height = get_terminal_height()
+        new_terminal_height = get_terminal_height()
         # Return to the saved cursor position
         call(['tput', 'rc'])
 
@@ -104,12 +104,22 @@ def display_menu(targets):
         puts(colored.cyan('Select a target (up (k), down (j), enter, ctrl+c to exit)'))
 
         # Recalculate visible targets based on selected_target
-        if selected_target > max(visible_target_range):
+        move_down = False
+        move_up = False
+        if terminal_height != new_terminal_height:
+            if selected_target + (terminal_height - 2) > num_targets:
+                move_down = True
+            else:
+                move_up = True
+
+            terminal_height = new_terminal_height
+
+        if selected_target > max(visible_target_range) or move_down:
             visible_start = selected_target - terminal_height + 3
             visible_end = selected_target + 1
             visible_target_range = range(visible_start, visible_end)
 
-        elif selected_target < min(visible_target_range):
+        elif selected_target < min(visible_target_range) or move_up:
             visible_start = selected_target
             visible_end = selected_target + terminal_height - 2
             visible_target_range = range(visible_start, visible_end)
