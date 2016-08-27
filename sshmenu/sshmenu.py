@@ -4,24 +4,26 @@ import os
 import readchar
 import sys
 import time
-import shutil
 
-from subprocess import call
+from subprocess import call, Popen, PIPE
 from clint import resources
 from clint.textui import puts, colored
 
 
 def main():
     # Check arguments
-    parser = argparse.ArgumentParser(prog='sshmenu', description='A simple tool for connecting to remote hosts via ssh.')
-    parser.add_argument('-c', '--configname', default='config.json', help='Specify an alternative configuration name.')
+    parser = argparse.ArgumentParser(prog='sshmenu', description='A convenient tool for bookmarking hosts and connecting to them via ssh.')
+    parser.add_argument('-c', '--configname', default='config', help='Specify an alternate configuration name.')
     args = parser.parse_args()
+
+    # Get config name
+    config_name = '{configname}.json'.format(configname=args.configname)
 
     # First parameter is 'company' name, hence duplicate arguments
     resources.init('sshmenu', 'sshmenu')
 
     # If the config file doesn't exist, create an example config
-    if resources.user.read(args.configname) is None:
+    if resources.user.read(config_name) is None:
         example_config = {
             'targets': [
                 {
@@ -37,20 +39,17 @@ def main():
                 }
             ]
         }
-        resources.user.write(args.configname, json.dumps(example_config, indent=4))
+        resources.user.write(config_name, json.dumps(example_config, indent=4))
         puts('I have created a new configuration file, please edit and run again:')
-        puts(resources.user.path + os.path.sep + args.configname)
+        puts(resources.user.path + os.path.sep + config_name)
     else:
-        config = json.loads(resources.user.read(args.configname))
+        config = json.loads(resources.user.read(config_name))
         display_menu(config['targets'])
 
 def get_terminal_height():
     # Return height of terminal as int
-    try:
-        width, height = shutil.get_terminal_size((80,80))
-    except AttributeError:
-        # get_terminal_size is only available in Python >= 3.3. Use default height of 80 if get_terminal_size fails
-        height = 80 
+    tput = Popen(["tput", "lines"], stdout=PIPE)
+    height, stderr = tput.communicate()
 
     return(int(height))
 
@@ -70,8 +69,9 @@ def display_menu(targets):
         if length > longest_host:
             longest_host = length
 
-        # Check line length
+        # Generate description and check line length
         desc = '%2d ' % (index) + target['host'].ljust(longest_host) + ' | ' + target['friendly']
+        target['desc'] = desc
         line_length = len(desc)
         if line_length > longest_line:
             longest_line = line_length
@@ -116,16 +116,15 @@ def display_menu(targets):
 
         # Print items
         for index, target in enumerate(targets):
-            desc = '%2d ' % (index) + target['host'].ljust(longest_host) + ' | ' + target['friendly']
             # Only print the items that are within the visible range.
             # Due to lines changing their position on the screen when scrolling,
             # we need to redraw the entire line + add padding to make sure all 
             # traces of the previous line are erased.
             if index in visible_target_range:
                 if index == selected_target:
-                    puts(colored.green(' -> ' + desc.ljust(longest_line)))
+                    puts(colored.green(' -> ' + target['desc'].ljust(longest_line)))
                 else:
-                    puts('    ' + desc.ljust(longest_line))
+                    puts('    ' + target['desc'].ljust(longest_line))
 
         # Hang until we get a keypress
         key = readchar.readkey()
