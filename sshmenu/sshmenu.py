@@ -60,7 +60,7 @@ def display_menu(targets):
         puts('Whoops, you don\'t have any targets listed in your config!')
         exit(0)
 
-    # Determine the longest host and line length
+    # Determine the longest host
     longest_host = -1
     longest_line = -1
     for index, target in enumerate(targets):
@@ -69,7 +69,8 @@ def display_menu(targets):
         if length > longest_host:
             longest_host = length
 
-        # Generate description and check line length
+    # Generate description and check line length
+    for index, target in enumerate(targets):
         desc = '%2d ' % (index) + target['host'].ljust(longest_host) + ' | ' + target['friendly']
         target['desc'] = desc
         line_length = len(desc)
