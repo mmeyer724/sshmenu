@@ -81,10 +81,14 @@ def connection_create():
     call(['clear'])
     puts(colored.cyan("Create new connection entry\n"))
 
-    while True:
-        host = input ('Hostname: ')
+    host = input ('Hostname: ')
 
-        if host is not "": break
+    if host is "":
+        puts("\nNothing done")
+
+        time.sleep(2)
+
+        return
 
     friendly = input ('Description []: ')
     command = input ('Command [ssh]: ')
@@ -119,7 +123,7 @@ def connection_edit(selected_target):
 
     friendly = input_prefill ('Description: ', target['friendly'])
     command = input_prefill ('Command [ssh]: ', 'ssh' if not target.get('command') else target['command'])
-    options = input_prefill ('Options []: ', ''.join(target['options']))
+    options = input_prefill ('Options []: ', ' '.join(target['options']))
 
     # Set the defaults if our input was empty
     command = 'ssh' if command == '' else command
