@@ -2,21 +2,21 @@ sshmenu
 -------
 ``sshmenu`` is a simple tool for connecting to remote hosts via ssh. Great if you have trouble remembering ip addresses, hostnames, or usernames.
 
-This tool works by using Python's ``os.execvp(...)``, which will replace the current process (python) with ``ssh``.
+This tool works by using Python's ``os.execvp(...)``, which will replace the current process (python) with ``ssh`` to create a seamless transition.
 
 .. image:: http://i.imgur.com/X1jaoci.gif
 
 
 Quick Setup
 -----------
-Tested working on OS X El Capitan (10.11.5) and Ubuntu Trusty Tahr (14.04), Xenial Xerus (16.04)
+Tested working on macOS High Sierra (10.13.1) and Ubuntu Trusty Tahr (14.04), Xenial Xerus (16.04)
 
 
-**OS X**
+**macOS**
 
 .. code-block:: bash
 
-   brew install https://raw.githubusercontent.com/Mike724/sshmenu/master/sshmenu.rb
+   brew install https://raw.githubusercontent.com/mmeyer724/sshmenu/master/sshmenu.rb
    sshmenu
    
 **Linux**
@@ -30,7 +30,7 @@ Tested working on OS X El Capitan (10.11.5) and Ubuntu Trusty Tahr (14.04), Xeni
 
 .. code-block:: bash
 
-   git clone https://github.com/Mike724/sshmenu.git
+   git clone https://github.com/mmeyer724/sshmenu.git
    cd sshmenu
    pip3 install -r requirements.txt
    python3 -m sshmenu
