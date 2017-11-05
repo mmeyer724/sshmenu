@@ -69,16 +69,16 @@ def display_help():
     call(['clear'])
     puts(colored.cyan('Available commands (press any key to exit)'))
 
-    puts('enter       - Connect to your selection')
-    puts('crtl+c | q  - Quit sshmenu')
-    puts('k (up)      - Move your selection up')
-    puts('j (down)    - Move your selection down')
-    puts('h           - Show help menu')
-    puts('c           - Create new connection')
-    puts('d           - Delete connection')
-    puts('e           - Edit connection')
-    puts('+ (plus)    - Move connection up')
-    puts('- (minus)   - Move connection down')
+    puts(' enter       - Connect to your selection')
+    puts(' crtl+c | q  - Quit sshmenu')
+    puts(' k (up)      - Move your selection up')
+    puts(' j (down)    - Move your selection down')
+    puts(' h           - Show help menu')
+    puts(' c           - Create new connection')
+    puts(' d           - Delete connection')
+    puts(' e           - Edit connection')
+    puts(' + (plus)    - Move connection up')
+    puts(' - (minus)   - Move connection down')
 
     # Hang until we get a keypress
     readchar.readkey()
@@ -253,7 +253,7 @@ def display_menu():
 
         # Generate description and check line length
         for index, target in enumerate(targets):
-            desc = '%2d ' % index + target['host'].ljust(longest_host) + ' | ' + target['friendly']
+            desc = target['host'].ljust(longest_host) + ' | ' + target['friendly']
             target['desc'] = desc
             line_length = len(desc)
             if line_length > longest_line:
