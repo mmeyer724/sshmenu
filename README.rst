@@ -4,7 +4,7 @@ sshmenu
 
 This tool works by using Python's ``os.execvp(...)``, which will replace the current process (python) with ``ssh`` to create a seamless transition.
 
-.. image:: http://i.imgur.com/X1jaoci.gif
+.. image:: https://i.imgur.com/LGrrENa.gif
 
 
 Quick Setup
