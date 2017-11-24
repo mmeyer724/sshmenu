@@ -10,7 +10,7 @@ from subprocess import call, Popen, PIPE
 from clint import resources
 from clint.textui import puts, colored
 
-targets = ''
+targets = []
 config_name = ''
 
 # Time to sleep between transitions
@@ -209,7 +209,8 @@ def update_targets():
     global targets, config_name
 
     config = json.loads(resources.user.read(config_name))
-    targets = config['targets']
+    if 'targets' in config:
+        targets = config['targets']
 
 
 def display_menu():
@@ -236,79 +237,65 @@ def display_menu():
     visible_target_range = range(terminal_height - 2)
 
     while True:
-        # Calculate height of terminal window in case it has been resized
-        new_terminal_height = get_terminal_height()
-
-        # Get a new number of targets in case something changed
-        num_targets = len(targets)
-
-        # Determine the longest host
-        longest_host = -1
-        longest_line = -1
-        for index, target in enumerate(targets):
-            length = len(target['host'])
-            # Check host length
-            if length > longest_host:
-                longest_host = length
-
-        # Generate description and check line length
-        for index, target in enumerate(targets):
-            desc = target['host'].ljust(longest_host) + ' | ' + target['friendly']
-            target['desc'] = desc
-            line_length = len(desc)
-            if line_length > longest_line:
-                longest_line = line_length
-
         # Return to the saved cursor position
         call(['tput', 'clear', 'rc'])
-        puts(colored.cyan('Select a target (press "h" for help)'))
 
-        # Check if the terminal height has changed
-        move_down = False
-        move_up = False
-        if terminal_height != new_terminal_height:
-            terminal_height = new_terminal_height
-            if selected_target >= (terminal_height - 3):
-                move_down = True
-            else:
-                move_up = True
+        # We need at least one target for our UI to make sense
+        num_targets = len(targets)
+        if num_targets <= 0:
+            puts(colored.red('Whoops, you don\'t have any connections defined in your config!'))
+            puts('')
+            puts('Press "c" to create a new connection')
+        else:
+            puts(colored.cyan('Select a target (press "h" for help)'))
 
-        # Recalculate visible targets based on selected_target
-        if move_down:
-            visible_start = selected_target - terminal_height + 3
-            visible_end = selected_target + 1
-            visible_target_range = range(visible_start, visible_end)
-        elif move_up:
-            visible_target_range = range(terminal_height - 2)
-        elif selected_target > max(visible_target_range):
-            visible_start = selected_target - terminal_height + 3
-            visible_end = selected_target + 1
-            visible_target_range = range(visible_start, visible_end)
-        elif selected_target < min(visible_target_range):
-            visible_start = selected_target
-            visible_end = selected_target + terminal_height - 2
-            visible_target_range = range(visible_start, visible_end)
+            # Determine the longest host
+            longest_host = -1
+            longest_line = -1
+            for index, target in enumerate(targets):
+                length = len(target['host'])
+                # Check host length
+                if length > longest_host:
+                    longest_host = length
 
-        # Make sure our selected target is not higher than possible
-        # This can happen if you delete the last target
-        selected_target = selected_target if selected_target < num_targets else 0
+            # Generate description and check line length
+            for index, target in enumerate(targets):
+                desc = target['host'].ljust(longest_host) + ' | ' + target['friendly']
+                target['desc'] = desc
+                line_length = len(desc)
+                if line_length > longest_line:
+                    longest_line = line_length
 
-        # Used to pad out the line numbers so that we can keep everything aligned
-        num_digits = len(str(num_targets))
-        digits_format_specifier = '%' + str(num_digits) + 'd'
+            # Recalculate visible targets based on selected_target
+            if selected_target > max(visible_target_range):
+                visible_start = selected_target - terminal_height + 3
+                visible_end = selected_target + 1
+                visible_target_range = range(visible_start, visible_end)
+            elif selected_target < min(visible_target_range):
+                visible_start = selected_target
+                visible_end = selected_target + terminal_height - 2
+                visible_target_range = range(visible_start, visible_end)
 
-        # Print items
-        for index, target in enumerate(targets):
-            # Only print the items that are within the visible range.
-            # Due to lines changing their position on the screen when scrolling,
-            # we need to redraw the entire line + add padding to make sure all
-            # traces of the previous line are erased.
-            if index in visible_target_range:
-                line = (digits_format_specifier + '. %s ') % (index + 1, target['desc'].ljust(longest_line))
-                if index == selected_target:
-                    puts(colored.green(' -> %s' % line))
-                else:
-                    puts(colored.white('    %s' % line))
+            # Make sure our selected target is not higher than possible
+            # This can happen if you delete the last target
+            selected_target = selected_target if selected_target < num_targets else 0
+
+            # Used to pad out the line numbers so that we can keep everything aligned
+            num_digits = len(str(num_targets))
+            digits_format_specifier = '%' + str(num_digits) + 'd'
+
+            # Print items
+            for index, target in enumerate(targets):
+                # Only print the items that are within the visible range.
+                # Due to lines changing their position on the screen when scrolling,
+                # we need to redraw the entire line + add padding to make sure all
+                # traces of the previous line are erased.
+                if index in visible_target_range:
+                    line = (digits_format_specifier + '. %s ') % (index + 1, target['desc'].ljust(longest_line))
+                    if index == selected_target:
+                        puts(colored.green(' -> %s' % line))
+                    else:
+                        puts(colored.white('    %s' % line))
 
         # Hang until we get a keypress
         key = readchar.readkey()
