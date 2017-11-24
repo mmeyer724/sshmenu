@@ -289,15 +289,13 @@ def display_menu():
             visible_end = selected_target + terminal_height - 2
             visible_target_range = range(visible_start, visible_end)
 
-        # We need at least one target for our UI to make sense
-        if num_targets <= 0:
-            puts('')
-            puts('Whoops, you don\'t have any connections defined in your config!')
-            puts('Press "c" to create a new connection')
-
         # Make sure our selected target is not higher than possible
         # This can happen if you delete the last target
         selected_target = selected_target if selected_target < num_targets else 0
+
+        # Used to pad out the line numbers so that we can keep everything aligned
+        num_digits = len(str(num_targets))
+        digits_format_specifier = '%' + str(num_digits) + 'd'
 
         # Print items
         for index, target in enumerate(targets):
@@ -306,10 +304,11 @@ def display_menu():
             # we need to redraw the entire line + add padding to make sure all
             # traces of the previous line are erased.
             if index in visible_target_range:
+                line = (digits_format_specifier + '. %s ') % (index + 1, target['desc'].ljust(longest_line))
                 if index == selected_target:
-                    puts(colored.green(' -> ' + target['desc'].ljust(longest_line)))
+                    puts(colored.green(' -> %s' % line))
                 else:
-                    puts('    ' + target['desc'].ljust(longest_line))
+                    puts(colored.white('    %s' % line))
 
         # Hang until we get a keypress
         key = readchar.readkey()
