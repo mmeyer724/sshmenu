@@ -16,6 +16,8 @@ config_name = ''
 # Time to sleep between transitions
 TRANSITION_DELAY_TIME = 0.5
 
+NUMBER_ENTRY_EXPIRE_TIME = 0.75
+
 
 def main():
     global config_name
@@ -226,7 +228,7 @@ def display_menu():
     number_buffer = []
 
     # Store time of last number that was entered
-    number_last = round(time.time())
+    time_last_digit_pressed = round(time.time())
 
     # Get initial terminal height
     terminal_height = get_terminal_height()
@@ -324,25 +326,17 @@ def display_menu():
 
         # Check if key is a number
         elif key in map(lambda x: str(x), range(10)):
-            requested_target = int(key)
+            current_time = time.time()
+            if current_time - time_last_digit_pressed >= NUMBER_ENTRY_EXPIRE_TIME:
+                number_buffer = []
+            time_last_digit_pressed = current_time
 
-            # Check if there are any previously entered numbers, and append if less than one second has gone by
-            if round(time.time()) - number_last <= 1:
-                number_buffer += key
-                requested_target = int(''.join(number_buffer))
-                # If the new target is invalid, just keep the previously selected target instead
-                if requested_target >= num_targets:
-                    requested_target = selected_target
-            else:
-                number_buffer = [key]
+            number_buffer += key
+            new_selection = int(''.join(number_buffer))
 
-            number_last = round(time.time())
-
-            # Ensure the new selection would be valid
-            if requested_target >= num_targets:
-                requested_target = num_targets - 1
-
-            selected_target = requested_target
+            # If the new target is invalid, just keep the previously selected target instead
+            if num_targets >= new_selection > 0:
+                selected_target = new_selection - 1
 
         elif key == readchar.key.ENTER and num_targets > 0:
             # For cleanliness clear the screen
