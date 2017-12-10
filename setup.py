@@ -5,13 +5,13 @@ with open('requirements.txt') as requirements_file:
 
 setup(
     name='sshmenu',
-    version='0.0.3',
+    version='0.0.4',
     license='MIT',
     description='Command line SSH menu and helper utility',
     long_description=open('README.rst').read(),
     author='Michael Meyer',
     author_email='michael@meyer.io',
-    url='https://github.com/Mike724/sshmenu',
+    url='https://github.com/mmeyer724/sshmenu',
     packages=['sshmenu'],
     install_requires=required,
     classifiers=[
