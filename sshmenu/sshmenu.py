@@ -50,7 +50,8 @@ def main():
                     'friendly': 'This is an example target using mosh',
                     'options': []
                 }
-            ]
+            ],
+            'saved_last_chosen_index' : 0
         }
         resources.user.write(config_name, json.dumps(example_config, indent=4))
 
@@ -216,13 +217,19 @@ def update_targets():
 
 
 def display_menu():
-    global targets
+    global targets, config_name
 
     # Save current cursor position so we can overwrite on list updates
     call(['tput', 'clear', 'sc'])
 
     # Keep track of currently selected target
-    selected_target = 0
+    ## selected_target = 0
+    config = json.loads(resources.user.read(config_name))
+    if 'saved_last_chosen_index' in config:
+        selected_target = config['saved_last_chosen_index']
+    else: # we might end up here if we upgraded from a previous version where the config file didn't save the last chosen entry
+        selected_target = 0
+        config['saved_last_chosen_index'] = 0
 
     # Support input of long numbers
     number_buffer = []
@@ -339,6 +346,11 @@ def display_menu():
                 selected_target = new_selection - 1
 
         elif key == readchar.key.ENTER and num_targets > 0:
+            # Save the new config
+            config['saved_last_chosen_index'] = selected_target
+            resources.user.write(config_name, json.dumps(config, indent=4))
+            update_targets()
+    
             # For cleanliness clear the screen
             call(['tput', 'clear'])
 
@@ -393,3 +405,4 @@ def input_prefill(prompt, text):
     result = input(prompt)
     readline.set_pre_input_hook()
     return result
+
