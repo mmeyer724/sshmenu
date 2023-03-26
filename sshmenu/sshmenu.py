@@ -216,20 +216,25 @@ def update_targets():
         targets = config['targets']
 
 
+def get_last_selected_target_index():
+    config = json.loads(resources.user.read(config_name))
+    return config.get('saved_last_chosen_index', 0)
+
+
+def save_last_selected_target_index(index: int):
+    config = json.loads(resources.user.read(config_name))
+    config['saved_last_chosen_index'] = index
+    resources.user.write(config_name, json.dumps(config, indent=4))
+
+
 def display_menu():
     global targets, config_name
 
     # Save current cursor position so we can overwrite on list updates
     call(['tput', 'clear', 'sc'])
 
-    # Keep track of currently selected target
-    ## selected_target = 0
-    config = json.loads(resources.user.read(config_name))
-    if 'saved_last_chosen_index' in config:
-        selected_target = config['saved_last_chosen_index']
-    else: # we might end up here if we upgraded from a previous version where the config file didn't save the last chosen entry
-        selected_target = 0
-        config['saved_last_chosen_index'] = 0
+    # Keep track of currently selected target, read from config file the last chosen one to select
+    selected_target = get_last_selected_target_index()
 
     # Support input of long numbers
     number_buffer = []
@@ -346,11 +351,9 @@ def display_menu():
                 selected_target = new_selection - 1
 
         elif key == readchar.key.ENTER and num_targets > 0:
-            # Save the new config
-            config['saved_last_chosen_index'] = selected_target
-            resources.user.write(config_name, json.dumps(config, indent=4))
-            update_targets()
-    
+            # Save the chosen index into the config
+            save_last_selected_target_index(selected_target)
+
             # For cleanliness clear the screen
             call(['tput', 'clear'])
 
