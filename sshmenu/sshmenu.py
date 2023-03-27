@@ -51,7 +51,7 @@ def main():
                     'options': []
                 }
             ],
-            'saved_last_chosen_index' : 0
+            'saved_last_chosen_index': 0
         }
         resources.user.write(config_name, json.dumps(example_config, indent=4))
 
@@ -88,8 +88,6 @@ def display_help():
 
 
 def connection_create():
-    global config_name
-
     call(['clear'])
     puts(colored.cyan('Create new connection entry'))
     puts('')
@@ -124,8 +122,6 @@ def connection_create():
 
 
 def connection_edit(selected_target):
-    global targets, config_name
-
     call(['clear'])
     puts(colored.cyan('Editing connection %s' % targets[selected_target]['host']))
     puts('')
@@ -160,8 +156,6 @@ def connection_edit(selected_target):
 
 
 def connection_delete(selected_target):
-    global targets, config_name
-
     call(['clear'])
     puts(colored.red('Delete connection entry for %s' % targets[selected_target]['host']))
     puts('')
@@ -189,8 +183,6 @@ def connection_delete(selected_target):
 
 
 def connection_move_up(selected_target):
-    global config_name
-
     config = json.loads(resources.user.read(config_name))
     config['targets'].insert(selected_target - 1, config['targets'].pop(selected_target))
 
@@ -199,8 +191,6 @@ def connection_move_up(selected_target):
 
 
 def connection_move_down(selected_target):
-    global config_name
-
     config = json.loads(resources.user.read(config_name))
     config['targets'].insert(selected_target + 1, config['targets'].pop(selected_target))
 
@@ -209,7 +199,7 @@ def connection_move_down(selected_target):
 
 
 def update_targets():
-    global targets, config_name
+    global targets
 
     config = json.loads(resources.user.read(config_name))
     if 'targets' in config:
@@ -228,8 +218,6 @@ def save_last_selected_target_index(index: int):
 
 
 def display_menu():
-    global targets, config_name
-
     # Save current cursor position so we can overwrite on list updates
     call(['tput', 'clear', 'sc'])
 
@@ -408,4 +396,3 @@ def input_prefill(prompt, text):
     result = input(prompt)
     readline.set_pre_input_hook()
     return result
-
